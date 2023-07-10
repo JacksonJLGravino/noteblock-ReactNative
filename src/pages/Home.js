@@ -2,44 +2,86 @@ import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   FlatList,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from 'react-native'
 import { Estilos } from '../style/Estilo'
 import { SearchBar } from '../components/SearchBar'
 import { Note } from '../components/Note'
-import { AntDesign } from '@expo/vector-icons'
+import { Entypo } from '@expo/vector-icons'
 import { NoteModal } from '../components/NoteModal'
-import { useNotes } from '../contexts/NoteProvider'
+import { NoteDetailModal } from '../components/NoteDetailModal'
 
 export function Home() {
-  const [openModal, setOpenModar] = useState(false)
-  const [resultNotFoud, setResultNotFoud] = useState(true)
+  const [openModal, setOpenModal] = useState(false)
+  const [openDetailModal, setOpenDetailModal] = useState(false)
+  const [noteDetail, setNoteDetail] = useState([])
   const [notes, setNotes] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
 
   async function findNotes() {
     const result = await AsyncStorage.getItem('notes')
-    console.log(result)
     if (result !== null) {
       setNotes(JSON.parse(result))
     }
   }
 
   useEffect(() => {
-    AsyncStorage.clear()
-    // findNotes()
+    findNotes()
   }, [])
 
   async function handleOnSubmit(text) {
     const note = { id: Date.now(), text }
-    const updatedNotes = [...notes, note]
+    const result = await AsyncStorage.getItem('notes')
+    let allNote = JSON.parse(result)
+    const updatedNotes = [...allNote, note]
     setNotes(updatedNotes)
     await AsyncStorage.setItem('notes', JSON.stringify(updatedNotes))
+  }
+
+  function openNote(item) {
+    setNoteDetail(item)
+    setOpenDetailModal(true)
+  }
+
+  async function handleSaveEditNote(text) {
+    const result = await AsyncStorage.getItem('notes')
+    let note = JSON.parse(result)
+    const newNotes = note.filter((n) => {
+      if (n.id === noteDetail.id) {
+        n.text = text
+      }
+      return n
+    })
+    setNotes(newNotes)
+    await AsyncStorage.setItem('notes', JSON.stringify(newNotes))
+    setSearchQuery('')
+    setOpenDetailModal(false)
+  }
+
+  async function handleDeletNote() {
+    const result = await AsyncStorage.getItem('notes')
+    let note = JSON.parse(result)
+    const newNotes = note.filter((n) => n.id !== noteDetail.id)
+    setNotes(newNotes)
+    await AsyncStorage.setItem('notes', JSON.stringify(newNotes))
+    setOpenDetailModal(false)
+  }
+
+  async function handleOnSearchInput(text) {
+    setSearchQuery(text)
+
+    const result = await AsyncStorage.getItem('notes')
+    const searchNote = JSON.parse(result)
+    const filteredNotes = searchNote.filter((note) => {
+      if (note.text.toLowerCase().includes(text.toLowerCase())) {
+        return note
+      }
+    })
+    setNotes([...filteredNotes])
   }
 
   return (
@@ -48,20 +90,31 @@ export function Home() {
         <Text style={styles.title}>my.notes</Text>
       </View>
       <View>
-        <SearchBar />
+        <SearchBar value={searchQuery} onChangeText={handleOnSearchInput} />
       </View>
       <FlatList
         data={notes}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <Note item={item} />}
+        renderItem={({ item }) => (
+          <Note item={item} onPress={() => openNote(item)} />
+        )}
       />
-      <TouchableOpacity style={styles.btn} onPress={() => setOpenModar(true)}>
-        <AntDesign name="plus" size={40} color="white" />
+      <TouchableOpacity style={styles.btn} onPress={() => setOpenModal(true)}>
+        <Entypo name="plus" size={40} color="white" />
       </TouchableOpacity>
       {openModal ? (
         <NoteModal
-          closeModal={() => setOpenModar(false)}
+          closeModal={() => setOpenModal(false)}
           onSubmit={handleOnSubmit}
+        />
+      ) : null}
+
+      {openDetailModal ? (
+        <NoteDetailModal
+          closeModal={() => setOpenDetailModal(false)}
+          textValue={noteDetail.text}
+          editNote={handleSaveEditNote}
+          deleteNote={handleDeletNote}
         />
       ) : null}
     </View>
@@ -92,3 +145,5 @@ const styles = StyleSheet.create({
     marginTop: 32
   }
 })
+
+/*      <NoteDetailModal /> */

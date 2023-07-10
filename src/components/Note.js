@@ -2,10 +2,10 @@ import React from 'react'
 import { TouchableOpacity, Text, StyleSheet } from 'react-native'
 import { Estilos } from '../style/Estilo'
 
-export function Note({ item }) {
+export function Note({ item, onPress }) {
   const { text } = item
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text style={styles.text} numberOfLines={3}>
         {text}
       </Text>

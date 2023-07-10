@@ -1,24 +1,26 @@
 import React, { useState } from 'react'
 import {
-  Modal,
-  StyleSheet,
-  Text,
-  TextInput,
   View,
-  TouchableOpacity
+  StyleSheet,
+  Modal,
+  Text,
+  TouchableOpacity,
+  TextInput
 } from 'react-native'
 import { Entypo } from '@expo/vector-icons'
 import { Estilos } from '../style/Estilo'
 
-export function NoteModal({ closeModal, onSubmit }) {
-  const [text, setText] = useState('')
+export function NoteDetailModal({
+  closeModal,
+  editNote,
+  textValue,
+  deleteNote
+}) {
+  const [text, setText] = useState(textValue)
 
-  function handleSave() {
-    if (!text.trim()) {
-      return closeModal()
-    }
-    onSubmit(text)
-    setText('')
+  function newText() {
+    editNote(text)
+    setText(textValue)
     closeModal()
   }
 
@@ -29,9 +31,10 @@ export function NoteModal({ closeModal, onSubmit }) {
           <TouchableOpacity onPress={closeModal}>
             <Entypo name="chevron-left" size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.title}>New Note</Text>
+          <Text style={styles.title}>Note</Text>
           <View style={{ width: 24, height: 24 }}></View>
         </View>
+
         <View style={styles.input}>
           <TextInput
             placeholder="Escreva aqui..."
@@ -44,11 +47,11 @@ export function NoteModal({ closeModal, onSubmit }) {
           />
         </View>
         <View style={styles.btns}>
-          <TouchableOpacity style={styles.confirm} onPress={handleSave}>
+          <TouchableOpacity style={styles.confirm} onPress={newText}>
             <Entypo name="check" size={40} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.cancel} onPress={() => setText('')}>
-            <Entypo name="erase" size={32} color="white" />
+          <TouchableOpacity style={styles.cancel} onPress={deleteNote}>
+            <Entypo name="trash" size={32} color="white" />
           </TouchableOpacity>
         </View>
       </View>
@@ -94,7 +97,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 50,
-    alignSelf: 'flex-end',
     marginBottom: 24
   },
   cancel: {

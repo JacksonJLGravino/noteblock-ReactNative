@@ -1,13 +1,23 @@
 import React from 'react'
-import { AntDesign } from '@expo/vector-icons'
+import { Entypo } from '@expo/vector-icons'
 import { StyleSheet, TextInput, View } from 'react-native'
 import { Estilos } from '../style/Estilo'
 
-export function SearchBar() {
+export function SearchBar({ value, onChangeText }) {
   return (
     <View style={styles.container}>
-      <TextInput placeholder="Pesquise aqui..." style={styles.search} />
-      <AntDesign name="search1" size={24} color="#4f4f4f" style={styles.icon} />
+      <TextInput
+        placeholder="Pesquise aqui..."
+        style={styles.search}
+        value={value}
+        onChangeText={onChangeText}
+      />
+      <Entypo
+        name="magnifying-glass"
+        size={24}
+        color="#4f4f4f"
+        style={styles.icon}
+      />
     </View>
   )
 }
